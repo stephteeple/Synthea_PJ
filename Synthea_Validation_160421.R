@@ -42,7 +42,7 @@ CAD = cleaned_validation_data_040621 %>%
   filter_all(any_vars(str_detect(., pattern = "Coronary Heart Disease")))
 
 cleaned_validation_data_040621$CAD <- ifelse(cleaned_validation_data_040621$patient_id %in% 
-                                                    CAD$patient_id, 1, 0)
+                                               CAD$patient_id, 1, 0)
 
 #Chronic Congestive Heart Failure 
 CHF = cleaned_validation_data_040621 %>% 
@@ -101,18 +101,18 @@ SN_C<- rbind(NHAMCS_C, Synthea_C) #Subset for Conditions
 
 ###Recoding Social Variables
 SN_SV <- SN_SV  %>% mutate(sex = recode(sex, Female = "female", Male = "male", F = "female", M = "male"), 
-         race = recode(na_if(race, ""), asian = "Asian", black = "Black or African-American", 
-                       "Black/African American" = "Black or African-American", white = "White", 
-                       other = "Other", native = "'Native'", .missing = "Missing", 
-                       "American Indian/AlaskaNative" = "American Indian/Alaskan Native"), 
-         ethnicity = recode(na_if(ethnicity, ""), hispanic = "Hispanic or Latino", 
-                            nonhispanic = "Not Hispanic or Latino", .missing = "Missing"))
+                           race = recode(na_if(race, ""), asian = "Asian", black = "Black or African-American", 
+                                         "Black/African American" = "Black or African-American", white = "White", 
+                                         other = "Other", native = "'Native'", .missing = "Missing", 
+                                         "American Indian/AlaskaNative" = "American Indian/Alaskan Native"), 
+                           ethnicity = recode(na_if(ethnicity, ""), hispanic = "Hispanic or Latino", 
+                                              nonhispanic = "Not Hispanic or Latino", .missing = "Missing"))
 
 SN_SV$race <- factor(SN_SV$race, levels = c("American Indian/Alaskan Native", "Asian", "Black or African-American", 
-                                          "Native Hawaiian/Other Pacific Islander", "White", "More than one", 
-                                          "'Native'", "Other", "Missing"))
+                                            "Native Hawaiian/Other Pacific Islander", "White", "More than one", 
+                                            "'Native'", "Other", "Missing"))
 SN_SV$ethnicity <- factor(SN_SV$ethnicity, levels = c("Hispanic or Latino", 
-                                                    "Not Hispanic or Latino", "Missing"))
+                                                      "Not Hispanic or Latino", "Missing"))
 
 
 ##########Results##########
@@ -150,18 +150,18 @@ CAD_SV<- rbind(CAD_s, CAD_n)
 
 #Recoding Social Variables
 CAD_SV <- CAD_SV  %>% mutate(sex = recode(sex, Female = "female", Male = "male", F = "female", M = "male"), 
-                           race = recode(na_if(race, ""), asian = "Asian", black = "Black or African-American", 
-                                         "Black/African American" = "Black or African-American", white = "White", 
-                                         other = "Other", native = "'Native'", .missing = "Missing", 
-                                         "American Indian/AlaskaNative" = "American Indian/Alaskan Native"), 
-                           ethnicity = recode(na_if(ethnicity, ""), hispanic = "Hispanic or Latino", 
-                                              nonhispanic = "Not Hispanic or Latino", .missing = "Missing"))
+                             race = recode(na_if(race, ""), asian = "Asian", black = "Black or African-American", 
+                                           "Black/African American" = "Black or African-American", white = "White", 
+                                           other = "Other", native = "'Native'", .missing = "Missing", 
+                                           "American Indian/AlaskaNative" = "American Indian/Alaskan Native"), 
+                             ethnicity = recode(na_if(ethnicity, ""), hispanic = "Hispanic or Latino", 
+                                                nonhispanic = "Not Hispanic or Latino", .missing = "Missing"))
 
 CAD_SV$race <- factor(CAD_SV$race, levels = c("American Indian/Alaskan Native", "Asian", "Black or African-American", 
-                                            "Native Hawaiian/Other Pacific Islander", "White", "More than one", 
-                                            "'Native'", "Other", "Missing"))
+                                              "Native Hawaiian/Other Pacific Islander", "White", "More than one", 
+                                              "'Native'", "Other", "Missing"))
 CAD_SV$ethnicity <- factor(CAD_SV$ethnicity, levels = c("Hispanic or Latino", 
-                                                      "Not Hispanic or Latino", "Missing"))
+                                                        "Not Hispanic or Latino", "Missing"))
 ##Creating table for CAD
 tableCAD <- tableby(Source ~ ., data = CAD_SV) 
 tableCAD<-summary(tableCAD, title = "Coronary Artery Disease")
@@ -170,7 +170,7 @@ tableCAD
 #or
 
 Table_SV <-table1(~ age + sex + race + ethnicity | Source, data = CAD_SV, overall = 
-                   FALSE, caption = "Table 3. Coronary Artery Disease: Summary Statistics")
+                    FALSE, caption = "Table 3. Coronary Artery Disease: Summary Statistics")
 Table_SV
 
 
@@ -206,8 +206,8 @@ NHAMCS_W<- NHAMCS_orig %>% filter(YEAR == "2016" | YEAR == "2017") %>% filter( A
 NHAMCS_W$PATWT <- as.numeric(as.character(NHAMCS$PATWT))
 
 NHAMCS_W$Diabetes <- ifelse(NHAMCS_W$DIABTYP0 == 1 | 
-                            NHAMCS_W$DIABTYP1 == 1 | 
-                            NHAMCS_W$DIABTYP2 == 1, 1, 0)
+                              NHAMCS_W$DIABTYP1 == 1 | 
+                              NHAMCS_W$DIABTYP2 == 1, 1, 0)
 
 NHAMCS_weighted <- svydesign(id=~CPSUM, 
                              strata=~CSTRATM, 
