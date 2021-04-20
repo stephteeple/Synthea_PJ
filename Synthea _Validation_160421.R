@@ -16,7 +16,9 @@ library(flextable)
 library(table1)
 library(tidyr)
 library(survey)
+library(ggplot2)
 library(arsenal)
+library(tibble)
 
 ###Importing data 
 setwd("~/Dropbox/Synthea_validation")
@@ -123,7 +125,7 @@ Table_SV
 
 
 ###Table 2. Proportions from each condition 
-Tab<- SN_C %>% group_by(Source) %>% 
+Tab <- SN_C %>% group_by(Source) %>% 
   summarise(across(CKD:Diabetes, mean))
 
 Table2 <- Tab %>% column_to_rownames("Source") %>% t %>% as.data.frame %>% 
