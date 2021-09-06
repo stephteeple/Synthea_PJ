@@ -39,10 +39,10 @@ proportion <- c('43.1','41.0','46.7', '55.6')                      #using propor
 
 df_ra <- data.frame(Source,race_sex,proportion)                    #Creating dataframe with information from research paper
 df_ra <- df_ra %>% arrange(race_sex)
-tab1 <- tab %>% rbind(df_ra)                                      #Stacking proportions from both sources
+tab1 <- tab %>% rbind(df_ra) %>% relocate(race_sex, .before = proportion)                                     #Stacking proportions from both sources
 
 
-
+tab1
 #creating flextable1
 ftable1 <- as_grouped_data(x = tab1, groups = c("Source"))
 ftable1 <- as_flextable(ftable1) %>%
