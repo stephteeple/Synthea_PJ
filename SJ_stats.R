@@ -6,13 +6,25 @@
  #library(tidyverse)
  #library(xtable)
  
-#import
+ # directories 
+mydir <- "U:/Synthea_privacy_justice"
+ 
 
-df_orig <- fread("~/Documents/ST_lab/Jaya_lab/Validation_Study/output/Synthea_merged.csv")
+
+# Import data ----------------------------------------------------------------------
+
+df_orig <- fread(paste0(mydir, "/data/Synthea_merged.csv"))
 df <- df_orig
 df$Source <- "Synthea"
 
-#Replicating Table 1 from research article: "Characteristics of black and white men and women hospitalized with acute myocardial infarction (AMI)
+
+
+
+
+
+# Replicate Table 1 ----------------------------------------------------------------
+
+# "Characteristics of black and white men and women hospitalized with acute myocardial infarction (AMI)
 
 tab <- df %>% count(sex,race,Source) %>%                             #Frequency of Myocardial infarction by race and sex
   mutate(proportion = prop.table(n)) %>%                             #Converting frequency to proportion   
@@ -66,11 +78,63 @@ ftable1 <- as_flextable(ftable1) %>%
 ftable1
 
 
+### So the reason you got such different results with your Table 1 replication is because
+### you used a different denominator. If you look closely at the research article, 
+### the results for Table 1 are 'rate per 10,000 Medicare enrollees'. 
+### With all patients now included in Synthea_merged.csv, we can calculate the equivalent 
+### values in the Synthea data. For this value as well, it's important to look 
+### only across 1 year - I'll do it for 2009-2010. 
+
+### Subset to people who were Medicare enrollees in 2009-2010 (approximately everyone
+### > 65 years old at the time)
+
+### Remove everyone who died before this year 
+tab1 <- df[df$deathdate > "2010-01-01" | is.na(df$deathdate), ]
+
+### calculate age at start of 2010
+tab1$age_start_2010 <- floor(as.numeric((ymd("2010-01-01") - tab1$birthdate)/365.25))
+
+### Keep only 65+ 
+tab1 <- tab1[tab1$age_start_2010 >= 65,]
+
+### Recode those who had MI in 2010 
+tab1$MI_2010 <- ifelse(tab1$MI >= "2010-01-01" & tab1$MI < "2011-01-01", 1, 0)
+
+### Calculate sex and race-specific rates of MI 
+### TODO: don't have a large enough dataset to do year-specific rates.
+check <- tab1 %>%
+  group_by(race, sex) %>%
+  summarise
 
 
-#Table 2 Percentage of black and white men and women who underwent selected procedures within 30 days of admission for AMI
-tab_CABG <- df %>% count(sex,race, CABG, Source) %>%                #Frequency of recieved procedure by sex-race
-  mutate(proportion = prop.table(n)) %>%                            #Converting frequency into proportion 
+
+
+
+
+
+# Table 2 ---------------------------------------------------------------------------
+
+# filter for patients who had MI 
+tab2 <- df %>%
+  filter(!is.na(MI))
+
+
+### So your problem with this table is each group needs to use its own respective denominator 
+### For example, only 4 Black women had MIs in this dataset (explaining the original low
+### proportion you got.) See footnote a under Table 2: "The denominator is AMI patients in each stratum..." 
+
+### Calculate denominators (AMI patients in each stratum)
+denom <- tab2 %>% 
+  group_by(sex, race) %>%
+  count() %>%
+  rename(total = n)
+
+
+# Percentage of black and white men and women who underwent selected procedures within 30 days of admission for AMI
+tab_CABG <- tab2 %>% 
+  count(sex,race, CABG, Source) %>%                # Counts of recieved procedure by sex-race
+  full_join(denom, by = c("sex", "race")) %>%      # Merge on stratum-specific denominators
+  mutate(proportion = n/total) %>%                 # Divide counts by totals 
   filter(CABG == "1") %>%                                           #Filtering proportion in which recieving CABG is TRUE
   filter(race == "black" | race == "white") %>%                        
   mutate(CABG = proportion, 
@@ -80,14 +144,19 @@ tab_CABG <- df %>% count(sex,race, CABG, Source) %>%                #Frequency o
 
 tab_CABG$race_sex <- paste(tab_CABG$race, tab_CABG$sex, sep= " ")      #Uniting sex and race to use the same categories from the paper
 
-tab_CABG <- tab_CABG %>% select(c(-race,-sex,-n,-proportion)) %>% 
-  relocate(race_sex, .before = CABG) %>% arrange(race_sex)
+tab_CABG <- tab_CABG %>% 
+  select(c(-race,-sex,-n,-proportion)) %>% 
+  relocate(race_sex, .before = CABG) %>% 
+  arrange(race_sex)
 
 
 
-tab_PCI <- df %>% count(sex,race, PCI, Source) %>% 
-   mutate(proportion = prop.table(n)) %>% filter(PCI == "1") %>% 
-  filter(race == "black" | race == "white") %>% 
+tab_PCI <- tab2 %>% 
+  count(sex,race, PCI, Source) %>%                 # Counts of recieved procedure by sex-race
+  full_join(denom, by = c("sex", "race")) %>%      # Merge on stratum-specific denominators
+  mutate(proportion = n/total) %>%                 # Divide counts by totals 
+  filter(PCI == "1") %>%                           # Filtering proportion in which recieving PCI is TRUE
+  filter(race == "black" | race == "white") %>%                        
   mutate(PCI = proportion, 
          sex = recode(sex, M = "men", F = "women"),
          race = recode(race, black = "Black or African-American", white = "White")) %>% 
@@ -101,17 +170,19 @@ tab_PCI <- tab_PCI %>% select(c(-race,-sex,-n,-proportion,-Source)) %>%
 tab_PCI
 tab_CABG
 
-##creating table with information from the paper
-Source <- 'Research article'
+## creating table with information from the paper
+Source <- 'Singh et al 2014'
 race_sex <- c("Black or African-American men", "Black or African-American women", 
                           "White men", "White women") 
+CABG <- c('0.083','0.051','0.116','0.059')           #Proportion: Among those who underwent CABG, number (%) during the index admissionb
+PCI <- c('0.326','0.242','0.407','0.305')         #Proportion: Among those who underwent PCI, number (%) during the index admissionb
+total <- c("16209", "11446", "148622", '153962')
+df_procedure <- data.frame(Source, race_sex, CABG, PCI, total) #creating dataframe
 
-CABG <- c('8.3','5.1','11.6','5.9')           #Proportion: Among those who underwent CABG, number (%) during the index admissionb
-PCI <- c('32.6','24.2','40.7','30.5')         #Proportion: Among those who underwent PCI, number (%) during the index admissionb
-
-df_procedure <- data.frame(Source,race_sex,CABG,PCI) #creating dataframe
-
-tab2 <- tab_CABG %>% left_join(tab_PCI, by="race_sex") %>% rbind(df_procedure)
+tab2 <- tab_CABG %>% 
+  select(-total) %>%
+  left_join(tab_PCI, by="race_sex") %>% 
+  rbind(df_procedure)
 
 tab2
 
@@ -127,6 +198,8 @@ ftable2 <- as_flextable(ftable2) %>%
   line_spacing(space = 2, i = ~ !is.na(Source)) %>% 
   set_header_labels(race_sex = "Sex - race groups", proportion = "Proportion") %>% 
   add_header_lines(values = "Table 2: Proportion of black and white men and women who underwent selected procedures") %>%
+  footnote(value = as_paragraph("The denominators (total) for Synthea is the number of synthetic patients in each stratum who have had an MI. The denominators (total) for Singh 2014 is the number of Medicare enrollees in each stratum who were hospitalized with acute MI in 2009-2010. "), 
+           ref_symbols = "") %>%
   autofit() 
 
 ftable2
