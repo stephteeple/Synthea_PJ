@@ -197,12 +197,15 @@ ftable2 <- as_flextable(ftable2) %>%
   padding(i = ~ !is.na(Source), padding = 5 ) %>% line_spacing(space = .8, part = "body") %>% 
   line_spacing(space = 2, i = ~ !is.na(Source)) %>% 
   set_header_labels(race_sex = "Sex - race groups", proportion = "Proportion") %>% 
-  add_header_lines(values = "Table 2: Proportion of black and white men and women who underwent selected procedures") %>%
-  footnote(value = as_paragraph("The denominators (total) for Synthea is the number of synthetic patients in each stratum who have had an MI. The denominators (total) for Singh 2014 is the number of Medicare enrollees in each stratum who were hospitalized with acute MI in 2009-2010. "), 
+  add_header_lines(values = "Table 2: Proportions of black and white men and women who had an MI and underwent selected procedures") %>%
+  footnote(value = as_paragraph("The denominators (total) for Synthea is the number of synthetic patients in each stratum who have had an MI (in a nationally-representative sample n = 10,000). The denominators (total) for Singh 2014 is the number of Medicare enrollees in each stratum who were hospitalized with acute MI in 2009-2010."), 
            ref_symbols = "") %>%
   autofit() 
 
 ftable2
+
+# save flextable 
+flextable::save_as_image(ftable2, paste0(mydir, "/figs/table2_comparison.png"))
 
 
 #Done
