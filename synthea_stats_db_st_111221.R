@@ -8,14 +8,16 @@ library(webshot) # needed to save flextable objects as images
 # mydir <- ("~/Documents/ST_lab/Jaya_lab") 
 
 mydir <- "C:/Users/Steph/Dropbox/projects/Synthea_privacy_justice"
+datetime <- "2021_11_12_12_22_45"
 
 # Data -------------------------------------------------------------------------
 
-#Importing
-df_orig <- fread(paste0(mydir, "/data/synthea_dist_092321/synthea_merged_db.csv"))
+# Importing
+df_orig <- fread(paste0(mydir, "/data/Synthea_merged_", datetime, ".csv"))
 df <- df_orig
 
-df <- df[!is.na(df$Diabetes),]
+# Filter for only patients with selected condition
+df <- df[!is.na(df$diabetes),]
 
 
 # Stats ------------------------------------------------------------------------

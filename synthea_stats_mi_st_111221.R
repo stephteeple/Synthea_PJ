@@ -7,13 +7,15 @@ library(flextable)
 #library(xtable)
 
 # directories 
-mydir <- "U:/Synthea_privacy_justice"
+# mydir <- ("~/Documents/ST_lab/Jaya_lab") 
 
-
+mydir <- "C:/Users/Steph/Dropbox/projects/Synthea_privacy_justice"
+datetime <- "2021_11_12_12_22_45"
 
 # Import data ----------------------------------------------------------------------
 
-df_orig <- fread(paste0(mydir, "/data/Synthea_merged.csv"))
+# Importing
+df_orig <- fread(paste0(mydir, "/data/Synthea_merged_", datetime, ".csv"))
 df <- df_orig
 df$Source <- "Synthea"
 
