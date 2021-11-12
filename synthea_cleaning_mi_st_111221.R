@@ -1,4 +1,3 @@
-
 # Set up 
 library(dplyr)
 library(data.table)
@@ -46,8 +45,8 @@ patients$DEATHDATE <- ymd(patients$DEATHDATE)
 
 ##Eliminating extra variables, renaming columns and filtering  
 patients <- patients %>% 
-  subset(select = c("Id","RACE", "ETHNICITY", "GENDER", "age", "BIRTHDATE", "DEATHDATE")) %>% 
-  rename(patient = Id,sex = GENDER,race = RACE, ethnicity = ETHNICITY, birthdate = BIRTHDATE,
+  subset(select = c("PATIENT","RACE", "ETHNICITY", "GENDER", "age", "BIRTHDATE", "DEATHDATE")) %>% 
+  rename(patient = PATIENT ,sex = GENDER, race = RACE, ethnicity = ETHNICITY, birthdate = BIRTHDATE,
          deathdate = DEATHDATE)
 
 
@@ -56,7 +55,7 @@ conditions <- conditions %>%
   subset(select = c("PATIENT","START","DESCRIPTION")) %>% 
   rename(start_condition = 
            START,condition = DESCRIPTION,patient = PATIENT) 
-  # filter(condition == "Myocardial Infarction") # only for Myocardial infarction
+# filter(condition == "Myocardial Infarction") # only for Myocardial infarction
 
 ### reshape conditions wide to get each row to be a unique patient (rather than encounter)
 keep_conditions <- c("Myocardial Infarction")
@@ -70,8 +69,8 @@ procedures <- procedures %>%
   subset(select = c("PATIENT","DESCRIPTION")) %>%
   rename(procedure = DESCRIPTION,
          patient = PATIENT) 
-  # filter(procedure == "Coronary artery bypass grafting" |
-  #        procedure ==  "Percutaneous coronary intervention")
+# filter(procedure == "Coronary artery bypass grafting" |
+#        procedure ==  "Percutaneous coronary intervention")
 
 
 
@@ -94,8 +93,7 @@ df <- conditions %>% full_join(patients, by="patient") # full join so we keep al
 df <- full_join(x = df, y = procedures, by = "patient")
 df <- df %>% replace_na(list(PCI = 0, CABG = 0))
 
-summary(df$PCI) # 92.37% of patients with MI got PCI
-summary(df$CABG) # 92.37% of patients with MI got CABG
+
 
 
 
@@ -108,4 +106,4 @@ fwrite(df, paste0(mydir, "/data/Synthea_merged.csv"))
 
 
 
-#Done 
+#Done

@@ -20,7 +20,7 @@ library(flextable)
 ### # directories 
 mydir <- "C:/Users/Steph/Dropbox/projects/Synthea_privacy_justice" # fill in with your own directory!
 
-datetime <- "092321"
+datetime <- "2021_11_12_10_24_09"
 
 # Data -----------------------------------------------------------------------------
 
@@ -53,8 +53,8 @@ patients$DEATHDATE <- ymd(patients$DEATHDATE)
 
 ##Eliminating extra variables, renaming columns and filtering  
 patients <- patients %>% 
-  subset(select = c("Id","RACE", "ETHNICITY", "GENDER", "age", "BIRTHDATE", "DEATHDATE")) %>% 
-  rename(patient = Id,sex = GENDER,race = RACE, ethnicity = ETHNICITY, birthdate = BIRTHDATE,
+  subset(select = c("PATIENT","RACE", "ETHNICITY", "GENDER", "age", "BIRTHDATE", "DEATHDATE")) %>% 
+  rename(patient = PATIENT,sex = GENDER,race = RACE, ethnicity = ETHNICITY, birthdate = BIRTHDATE,
          deathdate = DEATHDATE)
 
 
@@ -101,8 +101,6 @@ df <- conditions %>% full_join(patients, by="patient") # full join so we keep al
 df <- full_join(x = df, y = procedures, by = "patient")
 df <- df %>% replace_na(list(PCI = 0, CABG = 0))
 
-summary(df$PCI) # 92.37% of patients with MI got PCI
-summary(df$CABG) # 92.37% of patients with MI got CABG
 
 
 
@@ -111,7 +109,7 @@ summary(df$CABG) # 92.37% of patients with MI got CABG
 
 ### Again here, using the string saved in mydir so you don't have to getwd() again. 
 ### fwrite is like fread - it's faster than write.csv. 
-fwrite(df, paste0(mydir, "/data/Synthea_merged.csv"))
+fwrite(df, paste0(mydir, "/data/Synthea_merged_", datetime, ".csv"))
 
 
 
