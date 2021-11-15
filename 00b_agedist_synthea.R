@@ -16,7 +16,7 @@ library(dplyr)
 
 
 
-datetime <- "2021_11_12_10_24_09"
+datetime <- "2021_11_12_12_22_45"
 data_dir <- "C:/Users/Steph/Dropbox/projects/Synthea_privacy_justice/data/"
 args <- fread("C:/Users/Steph/Dropbox/projects/Synthea_privacy_justice/data/agedist_args.csv")
 

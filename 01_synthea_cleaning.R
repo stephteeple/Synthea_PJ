@@ -17,7 +17,7 @@ library(lubridate)
 
 mydir <- "C:/Users/Steph/Dropbox/projects/Synthea_privacy_justice" # fill in with your own directory 
 
-datetime <- "2021_11_12_10_24_09" # How to keep track of the data version you're using 
+datetime <- "2021_11_12_12_22_45" # How to keep track of the data version you're using 
 
 # Data -----------------------------------------------------------------------------
 
@@ -55,10 +55,14 @@ conditions <- conditions %>%
            START,condition = DESCRIPTION,patient = PATIENT) 
 
     # reshape wide to get each row to be a unique patient (rather than encounter)
-    keep_conditions <- c("Myocardial Infarction", "Cardiac Arrest", "Diabetes")
+    keep_conditions <- c("Myocardial Infarction", "Cardiac Arrest", "Diabetes", 
+                         "Chronic obstructive bronchitis (disorder)", "Pulmonary emphysema (disorder)")
     conditions <- conditions %>%
       filter(condition %in% keep_conditions) %>%
-      mutate(condition = recode(condition, "Myocardial Infarction" = "MI", "Cardiac Arrest" = "cardiac_arrest", "Diabetes" = "diabetes")) %>%
+      mutate(condition = recode(condition, "Myocardial Infarction" = "MI", "Cardiac Arrest" = "cardiac_arrest", 
+                                "Diabetes" = "diabetes", 
+                                "Chronic obstructive bronchitis (disorder)" = "COPD_bronch", 
+                                "Pulmonary emphysema (disorder)" = "COPD_emph")) %>%
       pivot_wider(id_cols = patient, names_from = condition, values_from = start_condition) # In this dataset, patients only ever have 1 MI
     
     ## combine MI and cardiac arrest 
@@ -75,6 +79,7 @@ procedures <- procedures %>%
 
 procedures$PCI <- ifelse(procedures$procedure == "Percutaneous coronary intervention", 1, 0) # create binary indicator variable for PCI
 procedures$CABG <- ifelse(procedures$procedure == "Coronary artery bypass grafting", 1, 0) # create binary indicator variable for CABG
+procedures$pulm_rehab <- ifelse(procedures$procedure == "Pulmonary rehabilitation (regime/therapy)", 1, 0)
 procedures$procedure <- NULL # no longer need original 'procedure' variable 
 procedures <- procedures %>% # to get 1 patient per row, group dataset by patient ids and keep only the maximum value for 'PCI' and 'CABG' variables
   group_by(patient) %>%
