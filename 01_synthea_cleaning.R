@@ -88,15 +88,16 @@ procedures <- procedures %>% # to get 1 patient per row, group dataset by patien
 
 # observations.csv - eliminating columns, keeping/recoding selected observations of interest
 observations <- observations %>%
-  subset(select = c("PATIENT","DESCRIPTION")) %>%
+  subset(select = c("PATIENT","DESCRIPTION", "DATE")) %>%
   rename(observation = DESCRIPTION,
          patient = PATIENT) 
 
 observations$HA1c <- ifelse(observations$observation == "Hemoglobin A1c/Hemoglobin.total in Blood", 1, 0) # binary indicator variable for HA1c
 observations$Total_chol <- ifelse(observations$observation == "Total Cholesterol", 1, 0) # binary indicator variable for Total_chol
 observations$observation <- NULL 
-observations <- observations %>% 
+check <- observations %>% 
   group_by(patient) %>%
+  arrange(desc(DATE)) %>% # Starting to try to address date/time issues
   summarise_all(max) 
 
 
