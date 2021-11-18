@@ -38,8 +38,8 @@ tab_HA1c <- df %>%
   full_join(denom, by = c("sex","race")) %>% 
   filter(race == "black" | race == "white") %>% 
   mutate(proportion = n/total) %>% 
-  mutate(sex = recode(sex, M = "Male", F = "Female"),
-         race = recode(race, black = "African American", white = "White")) %>% 
+  mutate(sex = recode(sex, M = "male patients", F = "female patients"),
+         race = recode(race, black = "Black", white = "White")) %>% 
   mutate(across(where(is.numeric), round, 3))
 
 #Pasting names of categories 
@@ -61,8 +61,8 @@ tab_cholesterol <- df %>%
   full_join(denom, by = c("sex","race")) %>% 
   filter(race == "black" | race == "white") %>% 
   mutate(proportion = n/total) %>% 
-  mutate(sex = recode(sex, M = "Male", F = "Female"),
-         race = recode(race, black = "African American", white = "White")) %>% 
+  mutate(sex = recode(sex, M = "male patients", F = "female patients"),
+         race = recode(race, black = "Black", white = "White")) %>% 
   mutate(across(where(is.numeric), round, 3))
 
 
@@ -90,8 +90,8 @@ tableS$Total_chol <- format(round(tableS$Total_chol), nsmall = 3)
 # Table2 paper
 Source <- "Chou 2007" #Change name
 
-race.sex <- c("African American Female", "White Female", 
-              "African American Male", "White Male") 
+race.sex <- c("African American female patients", "White female patients", 
+              "African American male patients", "White male patients") 
 
 HA1c <- c('0.869','0.896','0.836', '0.882') 
 Total_chol <- c('0.903','0.932','0.886', '0.931') 
@@ -113,8 +113,12 @@ ftable1 <- as_flextable(ftable1) %>%
   line_spacing(space = 2, i = ~ !is.na(Source)) %>% 
   set_header_labels(race.sex = "Sex - race groups", total.y = "Total") %>% 
   add_header_lines(values = "Table 1: Proportions of Black and white female and male patients who have diabetes and recieved selected tests") %>% 
-  align(j = c(2:4), align = "center", part = "all" ) %>% autofit() 
-
+  align(j = c(2:4), align = "center", part = "all" ) %>% 
+  footnote(value = as_paragraph("The denominators (total) for Synthea is the number of synthetic patients in each stratum who have been diagnosed with Type 2 diabetes mellitus (in a nationally-representative sample of patients >=65 years, n = 20,000). The denominators (total) for Chou 2007 is the number of Medicare enrollees (from HEDIS) in each stratum who were diagnosed with diabetes as of 2004. Chou 2007 reports on receipt of selected interventions in the calendar year 2004; Synthea from the first year following a patient's diagnosis."), 
+         ref_symbols = "") %>%
+  autofit() 
+  
+  
   ftable1
   
   

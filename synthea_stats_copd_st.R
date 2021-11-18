@@ -41,7 +41,7 @@ tab_pulm_rehab <- df %>%
   full_join(denom, by = "race") %>% 
   filter(race == "black" | race == "white") %>% 
   mutate(proportion = n/total) %>% 
-  mutate(race = recode(race, black = "African American", white = "White")) %>% 
+  mutate(race = recode(race, black = "Black patients", white = "White patients")) %>% 
   mutate(across(where(is.numeric), round, 3))
 
 # #Pasting names of categories 
@@ -67,7 +67,7 @@ tableS$n <- NULL
 
 # Table2 paper
 Source <- "Nishi 2016" #Change name
-race <- c("African American", "White")
+race <- c("Black patients", "White patients")
 pulm_rehab <- c('0.0265', '0.0333') 
 total <- c('5244', '89258')
 
@@ -86,6 +86,8 @@ ftable1 <- as_flextable(ftable1) %>%
   line_spacing(space = 2, i = ~ !is.na(Source)) %>% 
   set_header_labels(race = "Race groups", total = "Total") %>% 
   add_header_lines(values = "Table 1: Proportions of Black and white patients who have COPD and recieved pulmonary rehabilitation") %>% 
+  footnote(value = as_paragraph("The denominators (total) for Synthea is the number of synthetic patients in each stratum who have COPD (in a nationally-representative sample of patients >=65 years, n = 20,000). The denominators (total) for Nishi 2016 is the number of Medicare enrollees from the 2003-2012 5% sample in each stratum who have COPD."), 
+           ref_symbols = "") %>%
   align(j = c(2:3), align = "center", part = "all" ) %>% autofit() 
 
 ftable1

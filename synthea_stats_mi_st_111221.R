@@ -35,7 +35,7 @@ tab <- df %>% count(sex,race,Source) %>%                             #Frequency 
   mutate(across(where(is.numeric), round, 2)) %>%                    #Rounding by 2 digits
   mutate(sex = recode(sex, M = "men", F = "women"),
          race = recode(race, 
-                       black = "Black or African-American", white = "White"))  #Recoding categories
+                       black = "Black", white = "White"))  #Recoding categories
 
 tab$race_sex <- paste(tab$race, tab$sex, sep= " ")                  #Joining sex and race to use the same categories from research article
 
@@ -141,16 +141,17 @@ tab_CABG <- tab2 %>%
   filter(CABG == "1") %>%                                           #Filtering proportion in which recieving CABG is TRUE
   filter(race == "black" | race == "white") %>%                        
   mutate(CABG = proportion, 
-         sex = recode(sex, M = "men", F = "women"),
-         race = recode(race, black = "Black or African-American", white = "White")) %>% 
-  mutate(across(where(is.numeric), round, 2))
+         sex = recode(sex, M = "male patients", F = "female patients"),
+         race = recode(race, black = "Black", white = "White")) %>% 
+  mutate(across(where(is.numeric), round, 3))
 
 tab_CABG$race_sex <- paste(tab_CABG$race, tab_CABG$sex, sep= " ")      #Uniting sex and race to use the same categories from the paper
 
 tab_CABG <- tab_CABG %>% 
   select(c(-race,-sex,-n,-proportion)) %>% 
   relocate(race_sex, .before = CABG) %>% 
-  arrange(race_sex)
+  arrange(race_sex) %>%
+  mutate(across(where(is.numeric), round, 3))
 
 
 
@@ -161,9 +162,9 @@ tab_PCI <- tab2 %>%
   filter(PCI == "1") %>%                           # Filtering proportion in which recieving PCI is TRUE
   filter(race == "black" | race == "white") %>%                        
   mutate(PCI = proportion, 
-         sex = recode(sex, M = "men", F = "women"),
-         race = recode(race, black = "Black or African-American", white = "White")) %>% 
-  mutate(across(where(is.numeric), round, 2))
+         sex = recode(sex, M = "male patients", F = "female patients"),
+         race = recode(race, black = "Black", white = "White")) %>% 
+  mutate(across(where(is.numeric), round, 3))
 
 
 tab_PCI$race_sex <- paste(tab_PCI$race, tab_PCI$sex, sep= " ")  
@@ -171,15 +172,19 @@ tab_PCI <- tab_PCI %>% select(c(-race,-sex,-n,-proportion,-Source)) %>%
   relocate(race_sex, .before = PCI) %>% arrange(race_sex)
 
 tab_PCI
+tab_PCI$race_sex <- factor(tab_PCI$race_sex, levels = c("Black male patients", "Black female patients",
+                           "White male patients", "White female patients"))
 tab_CABG
+tab_CABG$race_sex <- factor(tab_CABG$race_sex, levels = c("Black male patients", "Black female patients",
+                                                        "White male patients", "White female patients"))
 
 ## creating table with information from the paper
 Source <- 'Singh et al 2014'
-race_sex <- c("Black or African-American men", "Black or African-American women", 
-              "White men", "White women") 
-CABG <- c('0.083','0.051','0.116','0.059')           #Proportion: Among those who underwent CABG, number (%) during the index admissionb
-PCI <- c('0.326','0.242','0.407','0.305')         #Proportion: Among those who underwent PCI, number (%) during the index admissionb
-total <- c("16209", "11446", "148622", '153962')
+race_sex <- c("Black female patients", "Black male patients", 
+              "White female patients", "White male patients") 
+CABG <- c('0.051', '0.083','0.059', '0.116')           #Proportion: Among those who underwent CABG, number (%) during the index admissionb
+PCI <- c('0.242', '0.326','0.305', '0.407')         #Proportion: Among those who underwent PCI, number (%) during the index admissionb
+total <- c('11446', "16209", '153962', "148622")
 df_procedure <- data.frame(Source, race_sex, CABG, PCI, total) #creating dataframe
 
 tab2 <- tab_CABG %>% 
@@ -188,7 +193,6 @@ tab2 <- tab_CABG %>%
   rbind(df_procedure)
 
 tab2
-
 
 # Creating flextable 
 ftable2 <- as_grouped_data(x = tab2, groups = c("Source"))
@@ -200,15 +204,15 @@ ftable2 <- as_flextable(ftable2) %>%
   padding(i = ~ !is.na(Source), padding = 5 ) %>% line_spacing(space = .8, part = "body") %>% 
   line_spacing(space = 2, i = ~ !is.na(Source)) %>% 
   set_header_labels(race_sex = "Sex - race groups", proportion = "Proportion") %>% 
-  add_header_lines(values = "Table 2: Proportions of black and white men and women who had an MI and underwent selected procedures") %>%
-  footnote(value = as_paragraph("The denominators (total) for Synthea is the number of synthetic patients in each stratum who have had an MI (in a nationally-representative sample n = 10,000). The denominators (total) for Singh 2014 is the number of Medicare enrollees in each stratum who were hospitalized with acute MI in 2009-2010."), 
+  add_header_lines(values = "Table 2: Proportions of Black and white male and female patients who had an MI and underwent selected procedures") %>%
+  footnote(value = as_paragraph("The denominators (total) for Synthea is the number of synthetic patients in each stratum who have had an MI (in a nationally-representative sample of patients >=65 years, n = 20,000). The denominators (total) for Singh 2014 is the number of Medicare enrollees in each stratum who were hospitalized with acute MI in 2009-2010."), 
            ref_symbols = "") %>%
   autofit() 
 
 ftable2
 
 # save flextable 
-flextable::save_as_image(ftable2, paste0(mydir, "/figs/table2_comparison.png"))
+save_as_image(ftable2, paste0(mydir, "/figs/MI_table_", format(Sys.time(), "%Y-%m-%d_%H.%M"), ".png")) 
 
 
 #Done

@@ -26,7 +26,7 @@ library(data.table)
 
 # Arguments and set up ----------------------------------------------------------------
 
-args <- fread("C:/Users/Steph/Dropbox/projects/Synthea_privacy_justice/data/run_synthea_args.csv")
+args <- fread("C:/Users/Steph/Dropbox/projects/Synthea_privacy_justice/data/run_synthea_args2.csv")
 
 setwd("C:/Users/Steph/Dropbox/projects/Synthea_privacy_justice/synthea")
 
@@ -61,6 +61,7 @@ synthea_state <- function(s) {
  
   # organize output files
   dir.create(paste0("C:/Users/Steph/Dropbox/projects/Synthea_privacy_justice/data/synthea_raw_", datetime, "/", state_string))
+  # remove uneeded files here. 
   out_files <- list.files("C:/Users/Steph/Dropbox/projects/Synthea_privacy_justice/synthea/output/csv", pattern = ".csv", full.names = TRUE)
   for(f in out_files) file.rename(f, gsub('[.]csv',paste0('_', state_string, '.csv'), f))
   renamed_files <- list.files("C:/Users/Steph/Dropbox/projects/Synthea_privacy_justice/synthea/output/csv", pattern = ".csv", full.names = TRUE)
