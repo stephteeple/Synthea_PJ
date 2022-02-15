@@ -1,7 +1,12 @@
 ###################################################################################
+## This script takes the US-representative Synthea cohort .csvs produced by 
+## 00a_run_synthea.R and 00b_agedist_synthea.R, cleans them, and merges them into 
+## a single file.
 ## 
-##
-##
+## Limited cleaning includes dropping unnecessary columns, some recoding, including
+## datetime data. It also filters for ONLY procedures and observations of interest
+## for this analysis in order to keep the resultant data files a manageable size 
+## for all research team members. 
 ##
 ###################################################################################
 
@@ -15,9 +20,9 @@ library(flextable)
 library(lubridate)
 
 
-mydir <- "C:/Users/Steph/Dropbox/projects/Synthea_privacy_justice" # fill in with your own directory 
+mydir <- "C:/Users/Steph/Dropbox/projects/Synthea_privacy_justice" 
 
-datetime <- "2021_11_12_12_22_45" # How to keep track of the data version you're using 
+datetime <- "2022_02_09_12_14_16" 
 
 # Data -----------------------------------------------------------------------------
 
@@ -29,7 +34,6 @@ patients <- patients_orig
 conditions <- conditions_orig
 procedures <- procedures_orig
 observations <- observations_orig
-
 
 
 
@@ -70,45 +74,40 @@ conditions <- conditions %>%
     # conditions$cardiac_arrest <- NULL
 
     
-    
-# procedures.csv - eliminating columns, keeping/recoding selected procedures of interest 
+# procedures.csv - eliminating columns, keeping/recoding selected procedures of interest, organizing procedure datetime data
 procedures <- procedures %>%
-  subset(select = c("PATIENT","DESCRIPTION")) %>%
-  rename(procedure = DESCRIPTION,
-         patient = PATIENT) 
+  subset(select = c("PATIENT","DESCRIPTION", "START")) %>%
+  rename(proc = DESCRIPTION,
+         patient = PATIENT, 
+         date = START) 
+procedures <- procedures[procedures$procedure == "Percutaneous coronary intervention" |
+                    procedures$procedure == "Coronary artery bypass grafting" |
+                    procedures$procedure == "Pulmonary rehabilitation (regime/therapy)",]
+procedures$procedure <- recode(procedures$procedure, "Percutaneous coronary intervention" = "PCI", 
+                               "Coronary artery bypass grafting" = "CABG",
+                               "Pulmonary rehabilitation (regime/therapy)" = "pulm_rehab")
 
-procedures$PCI <- ifelse(procedures$procedure == "Percutaneous coronary intervention", 1, 0) # create binary indicator variable for PCI
-procedures$CABG <- ifelse(procedures$procedure == "Coronary artery bypass grafting", 1, 0) # create binary indicator variable for CABG
-procedures$pulm_rehab <- ifelse(procedures$procedure == "Pulmonary rehabilitation (regime/therapy)", 1, 0)
-procedures$procedure <- NULL # no longer need original 'procedure' variable 
-procedures <- procedures %>% # to get 1 patient per row, group dataset by patient ids and keep only the maximum value for 'PCI' and 'CABG' variables
-  group_by(patient) %>%
-  summarise_all(max) # this tells us whether each patient had each procedure (e.g., PCI and CABG == 1)
 
-
-# observations.csv - eliminating columns, keeping/recoding selected observations of interest
+# observations.csv - eliminating columns, keeping/recoding selected observations of interest, keeping datetime data
 observations <- observations %>%
   subset(select = c("PATIENT","DESCRIPTION", "DATE")) %>%
-  rename(observation = DESCRIPTION,
-         patient = PATIENT) 
-
-observations$HA1c <- ifelse(observations$observation == "Hemoglobin A1c/Hemoglobin.total in Blood", 1, 0) # binary indicator variable for HA1c
-observations$Total_chol <- ifelse(observations$observation == "Total Cholesterol", 1, 0) # binary indicator variable for Total_chol
-observations$observation <- NULL 
-check <- observations %>% 
-  group_by(patient) %>%
-  arrange(desc(DATE)) %>% # Starting to try to address date/time issues
-  summarise_all(max) 
-
+  rename(proc = DESCRIPTION,
+         patient = PATIENT, 
+         date = DATE) 
+observations <- observations[observations$proc == "Hemoglobin A1c/Hemoglobin.total in Blood" | 
+                        observations$proc == "Total Cholesterol",]
+observations$proc <- recode(observations$proc, "Hemoglobin A1c/Hemoglobin.total in Blood" = "HbA1c", 
+                            "Total Cholesterol" = "Total_chol")
+                               
 
 
 # merge ----------------------------------------------------------------------------- 
 
+
 # Merge all
 df <- conditions %>% full_join(patients, by="patient") # full join so we keep all patients at this step, even those who did not have MI
-df <- full_join(x = df, y = procedures, by = "patient")
-df <- full_join(x = df, y = observations, by = "patient")
-df <- df %>% replace_na(list(PCI = 0, CABG = 0, HA1c = 0, Total_chol = 0))
+obs_cond <- rbind(procedures, observations)
+df <- left_join(x = df, y = obs_cond, by = "patient", na_matches = "never")
 
 
 
@@ -116,10 +115,7 @@ df <- df %>% replace_na(list(PCI = 0, CABG = 0, HA1c = 0, Total_chol = 0))
 
 # Write merged data ----------------------------------------------------------------
 
-### Again here, using the string saved in mydir so you don't have to getwd() again. 
-### fwrite is like fread - it's faster than write.csv. 
 fwrite(df, paste0(mydir, "/data/Synthea_merged_", datetime, ".csv"))
 
 
 
-#Done 

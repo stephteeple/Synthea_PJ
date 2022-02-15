@@ -3,7 +3,7 @@ library(data.table)
 library(dplyr)
 library(flextable)
 library(webshot) # needed to save flextable objects as images 
-
+library(tidyr)
 
 # mydir <- ("~/Documents/ST_lab/Jaya_lab") 
 
@@ -74,6 +74,12 @@ total <- c('5244', '89258')
 tableP <- data.frame(Source, race, pulm_rehab, total) 
 tableP <- tableP %>% arrange(race)
 table1 <- tableS %>% rbind(tableP) 
+
+# statistical tests
+# TODO: don't hard code this
+# Black patients
+bl_test <- prop.test(x = 122, n = 211, p = 0.0265, alternative = "two.sided", conf.level = 0.95, correct = TRUE) # one sample
+bl_test <- prop.test(x = c(122, 139), n = c(211, 5244), alternative = "two.sided", conf.level = 0.95, correct = TRUE) # two sample 
 
 #Flex table
 ftable1 <- as_grouped_data(x = table1, groups = c("Source"))

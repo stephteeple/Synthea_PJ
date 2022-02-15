@@ -102,6 +102,14 @@ tableP <- data.frame(Source, race.sex,HA1c,Total_chol,total.y)
 tableP <- tableP %>% arrange(race.sex)
 table1 <- tableS %>% rbind(tableP) 
 
+
+# Statistical tests 
+# TODO: don't hard code this
+# Black female patients
+bl_test <- prop.test(x = 265, n = 265, p = 0.869, alternative = "two.sided", conf.level = 0.95, correct = TRUE) # one sample
+bl_test <- prop.test(x = c(122, 139), n = c(211, 5244), alternative = "two.sided", conf.level = 0.95, correct = TRUE) # two sample 
+
+
 #Flex table
 ftable1 <- as_grouped_data(x = table1, groups = c("Source"))
 ftable1 <- as_flextable(ftable1) %>%
@@ -111,12 +119,12 @@ ftable1 <- as_flextable(ftable1) %>%
   fontsize(part = "all", size = 12) %>% 
   padding(i = ~ !is.na(Source), padding = 5 ) %>% line_spacing(space = .8, part = "body") %>% 
   line_spacing(space = 2, i = ~ !is.na(Source)) %>% 
-  set_header_labels(race.sex = "Sex - race groups", total.y = "Total") %>% 
+  set_header_labels(race.sex = "Sex - race groups", total.y = "Total", HA1c = "HbA1c") %>% 
   add_header_lines(values = "Table 1: Proportions of Black and white female and male patients who have diabetes and recieved selected tests") %>% 
   align(j = c(2:4), align = "center", part = "all" ) %>% 
   footnote(value = as_paragraph("The denominators (total) for Synthea is the number of synthetic patients in each stratum who have been diagnosed with Type 2 diabetes mellitus (in a nationally-representative sample of patients >=65 years, n = 20,000). The denominators (total) for Chou 2007 is the number of Medicare enrollees (from HEDIS) in each stratum who were diagnosed with diabetes as of 2004. Chou 2007 reports on receipt of selected interventions in the calendar year 2004; Synthea from the first year following a patient's diagnosis."), 
          ref_symbols = "") %>%
-  autofit() 
+  autofit()
   
   
   ftable1

@@ -13,9 +13,9 @@ library(data.table)
 library(lubridate)
 library(dplyr)
 
+# functions
 
-
-
+# arguments
 datetime <- "2021_11_12_12_22_45"
 data_dir <- "C:/Users/Steph/Dropbox/projects/Synthea_privacy_justice/data/"
 args <- fread("C:/Users/Steph/Dropbox/projects/Synthea_privacy_justice/data/agedist_args.csv")
