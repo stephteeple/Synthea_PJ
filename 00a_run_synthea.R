@@ -22,6 +22,7 @@ library(tictoc)
 library(data.table)
 
 ## directories
+data_dir <- "U:/Synthea_privacy_justice/data/"
 
 ## functions
 source("U:/Synthea_privacy_justice/code-synthea_privacy_justice/functions.R")
@@ -30,15 +31,15 @@ source("U:/Synthea_privacy_justice/code-synthea_privacy_justice/functions.R")
 
 # Arguments and set up ----------------------------------------------------------------
 
-args <- fread("C:/Users/Steph/Dropbox/projects/Synthea_privacy_justice/data/run_synthea_args2.csv")
+args <- fread("U:/Synthea_privacy_justice/data/run_synthea_args.csv")
 
-setwd("C:/Users/Steph/Dropbox/projects/Synthea_privacy_justice/synthea")
+setwd("U:/Synthea_privacy_justice/synthea")
 
 shell("gradlew.bat build check test")
 
 datetime <- format(Sys.time(), "%Y_%m_%d_%H_%M_%S")
 
-dir.create(paste0("C:/Users/Steph/Dropbox/projects/Synthea_privacy_justice/data/synthea_raw_", datetime))
+dir.create(paste0("U:/Synthea_privacy_justice/data/synthea_raw_", datetime))
 
 states <- args$state
 
@@ -51,16 +52,26 @@ states <- args$state
 # Run ------------------------------------------------------------------------------------
 
 # Test synthea command 
-synthea_test(state = "Alabama", pop = 1, datetime = datetime)
-dt <- fread("U:/Synthea_privacy_justice/data/synthea_test_2022_10_31_14_03_55/California/patients_California.csv")
-dt$age <- as.numeric(difftime(as.Date("2022-10-31"), as.Date(dt$BIRTHDATE, units = "days"))/365.2422)
-dt$alive <- ifelse(is.na(dt$DEATHDATE), 1, 0)
-dt$alive <- factor(dt$alive, levels = c(0,1), labels = c("alive", "dead"))
-table1(~ age | alive, data = dt)
+synthea_test(state = "New^ York", pop = 1, datetime = datetime)
+# dt <- fread("U:/Synthea_privacy_justice/data/synthea_test_2022_10_31_14_03_55/California/patients_California.csv")
+# dt$age <- as.numeric(difftime(as.Date("2022-10-31"), as.Date(dt$BIRTHDATE, units = "days"))/365.2422)
+# dt$alive <- ifelse(is.na(dt$DEATHDATE), 1, 0)
+# dt$alive <- factor(dt$alive, levels = c(0,1), labels = c("alive", "dead"))
+# table1(~ age | alive, data = dt)
 
 
 
 tic("Run synthea at the state level")
-lapply(states, synthea_state)
+lapply(states, synthea_state, datetime)
 toc()
 
+
+
+
+# Checks ----------------------------------------------------------------------------------
+
+# Table 1 of cohort 
+myfiles <- list.files(paste0(data_dir, "synthea_raw_", datetime), pattern = ".csv", 
+                      recursive = TRUE, full.names = TRUE)
+mypatientfiles <- grep(pattern = "patients", myfiles, value = TRUE)
+patients <- rbindlist(lapply(myfiles[grep(pattern = "patients", myfiles)], fread))
