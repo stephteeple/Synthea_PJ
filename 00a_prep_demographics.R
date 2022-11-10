@@ -92,16 +92,43 @@ counties <- pivot_wider(counties, id_cols = c(SUMLEV, STATE, COUNTY, STNAME, CTY
 
 
 
+# 3. Fix Dona Ana County in New Mexico -----------------------------------------------
 
-# 3.  Merge new counties 65+ data onto  Synthea default demongraphics file -----------
+# Apparently, there is only one US county with a special character in the name -
+# Doña Ana County, New Mexico. The character is present in the census data. In the 
+# default Synthea demographics file for some rows it is (1) not present and others
+# (2) screwy - e.g., DoÃ±a Ana County. This messes up the merge based on 
+# county name (resulting in no Synthea records produced for New Mexico).
+
+# check <- dems[dems$STNAME == "New Mexico",]
+# check <- arrange(check, CTYNAME)
+# View(check) # Dona Ana County, no special characters
+
+# see <- counties[counties$STNAME == "New Mexico",]
+# see <- arrange(see, CTYNAME)
+# View(see) # Doña Ana County
+
+
+counties$CTYNAME[counties$CTYNAME == "Doña Ana County"] <- "Dona Ana County"
+View(counties[counties$CTYNAME == "Dona Ana County",])
+
+dems$CTYNAME[dems$CTYNAME == "DoÃ±a Ana County"] <- "Dona Ana County"
+
+
+
+
+# 4.  Merge new counties 65+ data onto  Synthea default demongraphics file -----------
 
 mydems <- left_join(x = dems, y = counties, by = c("STNAME", "COUNTY", "CTYNAME"))
-nomatch <- anti_join(x = dems, y = counties, by = c("STNAME", "COUNTY", "CTYNAME"))
+nomatch <- anti_join(x = dems, y = counties, by = c("STNAME", "COUNTY", "CTYNAME")) # Now 0
+# View(nomatch)
 
 
 
 
-# 4. Create custom mydemogrphics.csv --------------------------------------------------
+
+
+# 5. Create custom mydemogrphics.csv --------------------------------------------------
 
 
 ### Update age distribution columns 

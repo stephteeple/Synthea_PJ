@@ -22,7 +22,14 @@ synthea_test <- function(state, pop, datetime) {
   
   # state and pop
   message("Running synthea test command...")
+  message(paste0("State = ", state, ", pop = ", pop))
   state_string <- gsub(pattern = "\\^ ", replacement = "_", state) # remove '^' for file names
+  
+  # Check to make sure the default synthea output directory is clear 
+  # (e.g., if we interrupted the previous run) - can mess up next run
+  old_files <- list.files("U:/Synthea_privacy_justice/synthea/output/csv", pattern = ".csv", full.names = TRUE)
+  message(paste0(length(old_files), " old files found in Synthea dir"))
+  remove(old_files)
   
   # run Synthea
   syn <- shQuote(paste0('run_synthea.bat -c U:/Synthea_privacy_justice/mysynthea.properties -p ',
